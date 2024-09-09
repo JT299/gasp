@@ -2243,3 +2243,82 @@ add = adds to the bottom
 sufo nft flush table ip CCTC
 sudo nft list table ip CCTC
 ```
+## NAT / PAT OPERATORS & CHAINS:
+```
+Statement Operator    =    Applicable Chains
+
+snat 			     postrouting
+ 			     input
+
+masquerade 		     postrouting
+
+dnat 			     prerouting
+			     output
+```
+## SOURCE NAT
+
+![image](https://github.com/user-attachments/assets/058b85fa-26e2-4eff-9133-dfb28cdfb4ad)
+
+![image](https://github.com/user-attachments/assets/5feaee4c-d15a-43dd-b3ce-3aea58bfd571)
+
+```
+iptables -t nat -A POSTROUTING -o eth0 -s 192.168.0.1 -j SNAT --to 1.1.1.1
+
+iptables -t nat -A POSTROUTING -p tcp -o eth0 -s 192.168.0.1 -j SNAT --to 1.1.1.1:900
+
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+```
+## DESTINATION NAT:
+![image](https://github.com/user-attachments/assets/e816f38a-e08f-4fde-bd04-cfbe4c982a12)
+```
+iptables -t nat -A PREROUTING -i eth0 -d 8.8.8.8 -j DNAT --to 10.0.0.1
+
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 22 -j DNAT --to 10.0.0.1:22
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j DNAT --to 10.0.0.2:80
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 443 -j DNAT --to 10.0.0.3:443
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080
+```
+## Creating NAT Tables and Chains:
+
+## Create the NAT table
+```
+    nft add table ip NAT
+```
+## Create the NAT chains
+```
+    nft add chain ip NAT PREROUTING { type nat hook prerouting priority 0 \; }
+
+    nft add chain ip NAT POSTROUTING { type nat hook postrouting priority 0 \; }
+```
+## SOURCE NAT
+```
+nft add rule ip NAT POSTROUTING ip saddr 10.10.0.40 oif eth0 snat 144.15.60.11
+
+nft add rule ip NAT POSTROUTING oif eth0 masquerade
+```
+## Destination NAT
+```
+nft add rule ip NAT PREROUTING iif eth0 ip daddr 144.15.60.11 dnat 10.10.0.40
+
+nft add rule ip NAT PREROUTING iif eth0 tcp dport { 80, 443 } dnat 10.1.0.3
+
+nft add rule ip NAT PREROUTING iif eth0 tcp dport 80 redirect to 8080
+```
+## Mangle Table IPTABLES (post routing)
+```
+iptables -t mangle -A POSTROUTING -o eth0 -j TTL --ttl-set 128
+
+iptables -t mangle -A POSTROUTING -o eth0 -j DSCP --set-dscp 26
+```
+## Mangle NFTables
+```
+nft add table ip MANGLE
+
+nft add chain ip MANGLE INPUT {type filter hook input priority 0 \; policy accept \;}
+
+nft add chain ip MANGLE OUTPUT {type filter hook output priority 0 \; policy accept \;}
+
+nft add rule ip MANGLE OUTPUT oif eth0 ip ttl set 128
+
+nft add rule ip MANGLE OUTPUT oif eth0 ip dscp set 26
+```
