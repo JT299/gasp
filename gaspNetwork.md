@@ -1951,4 +1951,68 @@ ssh net2_student18@localhost -p 21805  -----> ss -ntlp
 
 ssh net2_student18@localhost -p 21805 -D 9050 -NT
 ```
+## Day Access Controls   ///  https://net.cybbh.io/-/public/-/jobs/875942/artifacts/modules/networking/slides-v4/11_acl-h.html
 
+## Tables of iptables
+```
+    filter - default table. Provides packet filtering.
+
+    nat - used to translate private ←→ public address and ports.
+
+    mangle - provides special packet alteration. Can modify various fields header fields.
+```
+## Chains of iptables
+```
+    PREROUTING - packets entering NIC before routing
+
+    INPUT - packets to localhost after routing
+
+    FORWARD - packets routed from one NIC to another. (needs to be enabled)
+
+    OUTPUT - packets from localhost to be routed
+
+    POSTROUTING - packets leaving system after routing
+```
+## Chains assigned to each Table
+```
+    filter - INPUT, FORWARD, and OUTPUT
+
+    nat - PREROUTING, POSTROUTING, INPUT, and OUTPUT
+
+    mangle - All chains
+
+    raw - PREROUTING and OUTPUT
+
+    security - INPUT, FORWARD, and OUTPUT
+```
+## Common iptable options / man iptables
+```
+-t - Specifies the table. (Default is filter)
+-A - Appends a rule to the end of the list or below specified rule
+-I - Inserts the rule at the top of the list or above specified rule
+-R - Replaces a rule at the specified rule number
+-D - Deletes a rule at the specified rule number
+-F - Flushes the rules in the selected chain
+-L - Lists the rules in the selected chain using standard formatting
+-S - Lists the rules in the selected chain without standard formatting
+-P - Sets the default policy for the selected chain
+-n - Disables inverse lookups when listing rules
+--line-numbers - Prints the rule number when listing rules
+```
+## Before you flush, change the Default policy to ACCEPT
+
+## Specific at top ----> 
+## filter: IPTABLES
+```
+- input
+Deny dst port 22
+
+
+
+- Output
+Accecpt dst 10.10.0.40
+
+
+- Forward
+deny 10.10.0.40/27
+```
