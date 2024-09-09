@@ -2,8 +2,6 @@
 ## https://net.cybbh.io/public/networking/latest/index.html
 ## https://miro.com/app/board/o9J_klSqCSY=/
 
-## ssh student@10.50.42.163 -X
-## password
 ![image](https://github.com/user-attachments/assets/ee7f5f6a-a8bb-4c50-ac9d-f6dda018907f)
 
 ## ExplainShell.com  //  https://explainshell.com/
