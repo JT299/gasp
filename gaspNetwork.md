@@ -2001,6 +2001,98 @@ ssh net2_student18@localhost -p 21805 -D 9050 -NT
 ```
 ## Before you flush, change the Default policy to ACCEPT
 
+## Common iptable options
+```
+-p - Specifies the protocol
+-i - Specifies the input interface
+-o - Specifies the output interface
+--sport - Specifies the source port
+--dport - Specifies the destination port
+-s - Specifies the source IP
+-d - Specifies the destination IP
+-j - Specifies the jump target action
+```
+## iptables syntax
+```
+iptables -t [table] -A [chain] [rules] -j [action]
+
+    Table: filter*, nat, mangle
+
+    Chain: INPUT, OUTPUT, PREROUTING, POSTROUTING, FORWARD
+```
+## iptables rules syntax
+```
+-i [ iface ]
+
+-o [ iface ]
+
+-s [ ip.add | network/CIDR ]
+
+-d [ ip.add | network/CIDR ]
+```
+## iptables rules syntax
+```
+-p icmp [ --icmp-type type# { /code# } ]
+
+-p tcp [ --sport | --dport { port1 |  port1:port2 } ]
+
+-p tcp [ --tcp-flags SYN,ACK,PSH,RST,FIN,URG,ALL,NONE ]
+
+-p udp [ --sport | --dport { port1 | port1:port2 } ]
+```
+## iptables rules syntax
+```
+    -m to enable iptables extensions:
+
+-m state --state NEW,ESTABLISHED,RELATED,UNTRACKED,INVALID
+
+-m mac [ --mac-source | --mac-destination ] [mac]
+
+-p [tcp|udp] -m multiport [ --dports | --sports | --ports { port1 | port1:port15 } ]
+
+-m bpf --bytecode [ 'bytecode' ]
+
+-m iprange [ --src-range | --dst-range { ip1-ip2 } ]
+```
+## iptables action syntax
+```
+    ACCEPT - Allow the packet
+
+    REJECT - Deny the packet (send an ICMP reponse)
+
+    DROP - Deny the packet (send no response)
+
+-j [ ACCEPT | REJECT | DROP ]
+```
+## Modify iptables
+```
+    Flush table
+
+    iptables -t [table] -F
+
+    Change default policy
+
+    iptables -t [table] -P [chain] [action]
+
+    Lists rules with rule numbers
+
+    iptables -t [table] -L --line-numbers
+
+    Lists rules as commands interpreted by the system
+
+    iptables -t [table] -S
+```
+## DEMO:
+```
+sudo iptables -L
+sudo iptables -t nat -L
+
+sudo iptables -t filter -A INPUT -p tcp --dport 22 -j ACCEPT   ----> sudo iptables -t filter -A OUTPUT -p tcp --sport 22 -j ACCEPT  ------> sudo iptables -t filter -L
+
+sudo iptables -A INPUT -p tcp -m multiport --ports 6010,6011,6012 -j ACCEPT 
+sudo iptables -A OUTPUT -p tcp -m multiport --ports 6010,6011,6012 -j ACCEPT 
+
+```
 ## Specific at top ----> 
 ## filter: IPTABLES
 ```
@@ -2016,3 +2108,126 @@ Accecpt dst 10.10.0.40
 - Forward
 deny 10.10.0.40/27
 ```
+
+## NFTABLES :
+## 1. Create the Table
+```
+nft add table [family] [table]
+
+    [family] = ip*, ip6, inet, arp, bridge and netdev.
+
+    [table] = user provided name for the table.
+```
+## 2. Create the Base Chain
+```
+nft add chain [family] [table] [chain] { type [type] hook [hook]
+    priority [priority] \; policy [policy] \;}
+
+* [chain] = User defined name for the chain.
+
+* [type] =  can be filter, route or nat.
+
+* [hook] = prerouting, ingress, input, forward, output or
+         postrouting.
+
+* [priority] = user provided integer. Lower number = higher
+             priority. default = 0. Use "--" before
+             negative numbers.
+
+* ; [policy] ; = set policy for the chain. Can be
+              accept (default) or drop.
+
+ Use "\" to escape the ";" in bash
+ ```
+## 3. Create a rule in the Chain
+```
+nft add rule [family] [table] [chain] [matches (matches)] [statement]
+
+* [matches] = typically protocol headers(i.e. ip, ip6, tcp,
+            udp, icmp, ether, etc)
+
+* (matches) = these are specific to the [matches] field.
+
+* [statement] = action performed when packet is matched. Some
+              examples are: log, accept, drop, reject,
+              counter, nat (dnat, snat, masquerade)
+```
+## Rule Match options
+```
+ip [ saddr | daddr { ip | ip1-ip2 | ip/CIDR | ip1, ip2, ip3 } ]
+
+tcp flags { syn, ack, psh, rst, fin }
+
+tcp [ sport | dport { port1 | port1-port2 | port1, port2, port3 } ]
+
+udp [ sport| dport { port1 | port1-port2 | port1, port2, port3 } ]
+
+icmp [ type | code { type# | code# } ]
+```
+## Rule Match options
+```
+ct state { new, established, related, invalid, untracked }
+
+iif [iface]
+
+oif [iface]
+```
+## Modify NFTables
+```
+nft { list | flush } ruleset
+
+nft { delete | list | flush } table [family] [table]
+
+nft { delete | list | flush } chain [family] [table] [chain]
+```
+## Modify NFTables
+```
+    List table with handle numbers
+
+    nft list table [family] [table] [-a]
+
+    Adds after position
+
+    nft add rule [family] [table] [chain] [position <position>] [matches] [statement]
+
+    Inserts before position
+
+    nft insert rule [family] [table] [chain] [position <position>] [matches] [statement]
+
+    Replaces rule at handle
+
+    nft replace rule [family] [table] [chain] [handle <handle>] [matches] [statement]
+
+    Deletes rule at handle
+
+    nft delete rule [family] [table] [chain] [handle <handle>]
+```
+## Modify NFTables
+```
+    To change the current policy
+
+    nft add chain [family] [table] [chain] { \; policy [policy] \;}
+```
+## NFTables DEMO:
+```
+sudo nft add table ip CCTC  -----> sudo nft list ruleset
+
+sudo nft add chain ip CCTC INPUT { type filter hook input priority 0 \; policy accept \; }
+
+sudo nft add chain ip CCTC OUTPUT { type filter hook output priority 0 \; policy accept \; }
+
+sudo nft delete chain ip CCTC OUTPUT   ----> sudo nft list ruleset
+
+sudo nft insert rule ip CCTC INPUT tcp dport 22 accept ------>  sudo nft insert rule ip CCTC INPUT tcp sport 22 accept
+sudo nft insert rule ip CCTC OUTPUT tcp dport 22 accept -----> sudo nft insert fule ip CCTC OUTPUT tcp sport 22 accept
+sudo nft list ruleset -ann
+
+(Terminator)
+sudo nft add rule ip CCTC INPUT tcp dport { 6010,6011,6012 } ct state { new, established } accept
+sudo nft add rule ip CCTC INPUT tcp sport { 6010,6011,6012 } ct state { new, established } accept
+sudo nft add rule ip CCTC OUTPUT tcp dport { 6010,6011,6012 } ct state { new, established } accept
+sudo nft add rule ip CCTC OUTPUT tcp sport { 6010,6011,6012 } ct state { new, established } accept
+
+Change Default policy:
+sudo nft add chain ip CCTC INPUT {\; policy drop \; }
+
