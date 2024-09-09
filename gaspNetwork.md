@@ -2230,4 +2230,16 @@ sudo nft add rule ip CCTC OUTPUT tcp sport { 6010,6011,6012 } ct state { new, es
 
 Change Default policy:
 sudo nft add chain ip CCTC INPUT {\; policy drop \; }
+sudo nft add chain ip CCTC INPUT { \; policy accept \; } 
+sudo nft add chain ip CCTC OUTPUT { \; policy accept \; }
 
+IP addresses:
+sudo nft insert rule ip CCTC INPUT ip saddr 172.1.6.82.106 drop
+sudo nft insert rule ip CCTC OUTPUT ip daddr 172.1.6.82.106 drop
+
+insert = adds to the top
+add = adds to the bottom
+
+sufo nft flush table ip CCTC
+sudo nft list table ip CCTC
+```
