@@ -1931,4 +1931,24 @@ proxychains nc localhost 23456
 
     Large amounts of traffic/ unusual times
 ```
+## South Park
+![image](https://github.com/user-attachments/assets/5e50a8a7-a8bf-4c39-b0db-c72de2c754d4)
+
+```
+telnet 10.50.23.236 ---> ssh student@10.50.42.163 -R 21899:localhost:8462 -NT (Telnet to Eric, create a remote tunnel back to BIH)
+
+ssh net2_student18@localhost -p 21899 -L 21801:192.168.100.60:22 -NT (Create a local tunnel going to Kenny)
+
+ssh net2_student18@localhost -p 21801 -L 21802:10.90.50.140:6481 -NT (Create a local tunnel going to Kyle)
+
+ssh net2_student18@localhost -p 21802 -L 21803:172.20.21.5:23 -NT (Create a local tunnel going to Stan via telnet port 23)
+
+telnet localhost 21803 (Telnet to stan)  ----> ssh net2_student18@172.20.21.4 -p 6481 -R 21898:localhost:22 -NT (creating a remote tunnel going back to Kyle)
+
+ssh net2_student18@localhost -p 21802 -L 21805:localhost:21898 -NT (Connecting the two Remote Tunnels. -p will be the port opened up for that device 21802)
+
+ssh net2_student18@localhost -p 21805  -----> ss -ntlp
+
+ssh net2_student18@localhost -p 21805 -D 9050 -NT
+```
 
