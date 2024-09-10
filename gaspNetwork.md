@@ -2342,3 +2342,372 @@ ssh net2_student18@localhost -p 21803 -L 21806:localhost:21898 -NT
 
 ssh net2_student18@localhost -p 21806 -D 9050 -NT  -----> proxychains nc localhost 58246 ( Dynamic tunnel )
 ```
+## DAY Network Filtering:
+![image](https://github.com/user-attachments/assets/0d60c471-b578-40ca-aa6a-5e3bf911c7b2)
+
+## The placement of filtering devices can be viewed on a network diagram (see image)
+```
+    Location A - A Firewall could be placed here. It is the most logical selection for a filtering device at that location.
+
+    Location B - A ACL can be placed at this location. The direction that is applied depends on whether you are filtering packets inbound or outbound.
+
+    Location C - A firewall could be place at this location. ( TAP or IDS ) 
+
+    Location D - A proxy is most likely to be placed at this location. Proxies are often placed in DMZs. However, an IDS/IPS is not outside the realm of reason. Your customers intent will dictate which device would be used.
+
+    Location E - Since this is a router, Access Control Lists would be on the device.
+
+    Locations F, G, H - Switches use ACL’s in the form of PACL’s and VACLs.
+
+    Location I - An iptable or nftable can be used here. Windows firewall or defender can be used for windows boxes. There is no reason to place a proxy, or another physical firewall between the switch and host. ( HOST BASED FIREWALLS )
+```
+## ACL   ///  https://net.cybbh.io/public/networking/latest/11_acl/fg.html  /// https://net.cybbh.io/-/public/-/jobs/875942/artifacts/modules/networking/slides-v4/11_acl-n.html
+## Create ACLs
+```
+Demo> enable #enter privileged exec mode
+
+Demo# configure terminal #enter global config mode
+
+Demo(config)# access-list 37 ... (output omitted) ...
+
+Demo(config)# ip access-list standard block_echo_request
+
+Demo(config)# access-list 123  ... (output omitted) ...
+
+Demo(config)# ip access-list extended zone_transfers
+```
+## Standard Numbered ACL syntax
+```
+router(config)# access-list {1-99 | 1300-1999}  {permit|deny}  {source IP add}
+                {source wildcard mask}
+
+router(config)#  access-list 10 permit host 10.0.0.1
+
+router(config)#  access-list 10 deny 10.0.0.0 0.255.255.255
+
+router(config)#  access-list 10 permit any
+```
+## Standard Named ACL Syntax
+```
+router(config)# ip access-list standard [name]
+
+router(config-std-nacl)# {permit | deny}  {source ip add}  {source wildcard mask}
+
+router(config)#  ip access-list standard CCTC-STD
+
+router(config-std-nacl)#  permit host 10.0.0.1
+
+router(config-std-nacl)#  deny 10.0.0.0 0.255.255.255
+
+router(config-std-nacl)#  permit any
+```
+## Extended Numbered ACL Syntax
+```
+router(config)# access-list {100-199 | 2000-2699} {permit | deny} {protocol}
+                {source IP add & wildcard} {operand: eq|lt|gt|neq}
+                {port# |protocol} {dest IP add & wildcard} {operand: eq|lt|gt|neq}
+                {port# |protocol}
+
+router(config)# access-list 144 permit tcp host 10.0.0.1 any eq 22
+
+router(config)# access-list 144 deny tcp 10.0.0.0 0.255.255.255 any eq telnet
+
+router(config)# access-list 144 permit icmp 10.0.0.0 0.255.255.255 192.168.0.0
+                0.0.255.255 echo
+
+router(config)# access-list 144 deny icmp 10.0.0.0 0.255.255.255 192.168.0.0
+                0.0.255.255 echo-reply
+
+router(config)# access-list 144 permit ip any any
+```
+## Extended Named ACL Syntax
+```
+router(config)# ip access-list extended  [name]
+
+router(config-ext-nacl)# [sequence number] {permit | deny} {protocol}
+                         {source IP add & wildcard} {operand: eq|lt|gt|neq}
+                         {port# |protocol} {dest IP add & wildcard} {operand:
+                         eq|lt|gt|neq} {port# |protocol}
+
+router(config)# ip access-list extended CCTC-EXT
+
+router(config-ext-nacl)# permit tcp host 10.0.0.1 any eq 22
+
+router(config-ext-nacl)# deny tcp 10.0.0.0 0.255.255.255 any eq telnet
+
+router(config-ext-nacl)# permit icmp 10.0.0.0 0.255.255.255 192.168.0.0
+                         0.0.255.255 echo
+
+router(config-ext-nacl)# deny icmp 10.0.0.0 0.255.255.255 192.168.0.0
+                         0.0.255.255 echo-reply
+
+router(config-ext-nacl)# permit ip any any
+```
+## ACLs rules
+```
+    One ACL per interface, protocol and direction
+
+    Must contain one permit statement
+
+    Read top down
+
+    Standard ACL generally applied closer to traffic destination
+
+    Extended ACL generally applied closer to traffic source
+```
+## Apply an ACL to an interface or line
+```
+router(config)#  interface {type} {mod/slot/port}
+
+router(config)#  ip access-group {ACL# | name} {in | out}
+
+router(config)#  interface s0/0/0
+
+router(config-if)#  ip access-group 10 out
+
+router(config)#  interface g0/1/1
+
+router(config-if)#  ip access-group CCTC-EXT in
+
+router(config)#  line vty 0 15
+
+router(config)#  access-class CCTC-STD in
+```
+## EXTENDED = closer to source
+## Standard = closer to destination 
+
+## Construct advanced IDS (snort) rules
+```
+    Installation Directory
+
+        /etc/snort
+
+    Configuration File
+
+        /etc/snort/snort.conf
+
+    Rules Directory
+
+        /etc/snort/rules
+
+    Rule naming
+
+        [name].rules
+
+    Default Log Directory
+
+        /var/log/snort
+```
+##     Common line switches
+```
+        -D - to run snort as a daemon
+
+        -c - to specify a configuration file when running snort
+
+        -l - specify a log directory
+
+        -r - to have snort read a pcap file
+```
+##To run snort as a Daemon
+```
+sudo snort -D -c /etc/snort/snort.conf -l /var/log/snort
+```
+## To run snort against a PCAP
+```
+sudo snort -c /etc/snort/rules/file.rules -r file.pcap
+```
+## Snort IDS/IPS rule - Header
+```
+[action] [protocol] [s.ip] [s.port] [direction] [d.ip] [d.port] ( match conditions ;)
+
+* Action - alert, log, pass, drop, or reject
+* Protocol - TCP, UDP, ICMP, or IP
+* Source IP address - one IP, network, [IP range], or any
+* Source Port - one, [multiple], any, or [range of ports]
+* Direction - source to destination or both
+* Destination IP address - one IP, network, [IP range], or any
+* Destination port - one, [multiple], any, or [range of ports]
+```
+## Snort IDS/IPS rule - header
+```
+Snort rules consist of a header which sets the conditions for the rule to work and rule options (a rule body) which provides the actual rule (matching criteria and action).
+
+[action] [protocol] [source ip] [source port] [direction] [destination ip] [destination port] ( match conditions ;)
+
+A Snort header is composed of:
+
+    Action - such as alert, log, pass, drop, reject
+
+        alert - generate alert and log packet
+
+        log - log packet only
+
+        pass - ignore the packet
+
+        drop - block and log packet
+
+        reject - block and log packet and send TCP message (for TCP traffic) or ICMP message (for UDP traffic)
+
+        sdrop - silent drop - block packet only (no logging)
+
+    Protocol
+
+        tcp
+
+        udp
+
+        icmp
+
+        ip
+
+    Source IP address
+
+        a specific address (i.e. 192.168.1.1 )
+
+        a CIDR notation (i.e. 192.168.1.0/24 )
+
+        a range of addresses (i.e. [192.168.1.1-192.168.1.10] )
+
+        multiple addresses (i.e. [192.138.1.1,192.168.1.10] )
+
+        variable addresses (i.e. $EXTERNALNET ) (must be defined to be used)
+
+        "any" IP address
+
+    Source Port
+
+        one port (i.e. 22 )
+
+        multiple ports (i.e. [22,23,80] )
+
+        a range of ports (i.e. 1:1024 = 1 to 1024, :1024 = less than or equal to 1024, 1024: = greater than or equal to 1024)
+
+        variable ports (i.e. $EXTERNALPORTS) (must be defined to be used)
+
+        any - When icmp protocol is used then "any" must still be used as a place holder.
+
+    Direction
+
+        source to destination ( - > )
+
+        either direction ( <> )
+
+    Destination IP address
+
+        a specific address (i.e. 192.168.1.1 )
+
+        a CIDR notation (i.e. 192.168.1.0/24 )
+
+        a range of addresses (i.e. [192.168.1.1-192.168.1.10] )
+
+        multiple addresses (i.e. [192.138.1.1,192.168.1.10] )
+
+        variable addresses (i.e. $EXTERNALNET ) (must be defined to be used)
+
+        "any" IP address
+
+    Destination port
+
+        one port (i.e. 22 )
+
+        multiple ports (i.e. [22,23,80] )
+
+        a range of ports (i.e. 1:1024 = 1 to 1024, :1024 = less than or equal to 1024, 1024: = greater than or equal to 1024)
+
+        variable ports (i.e. $INTERNALPORTS) (must be defined to be used)
+
+        any - When icmp protocol is used then "any" must still be used as a place holder.
+
+
+	You can use the ! symbol in front of any variable to provide negation. (i.e. !22 or !192.168.1.1) 
+ ```
+## Snort IDS/IPS General rule options:
+```
+* msg:"text" - specifies the human-readable alert message
+* reference: - links to external source of the rule
+* sid: - used to uniquely identify Snort rules (required)
+* rev: - uniquely identify revisions of Snort rules
+* classtype: - used to describe what a successful attack would do
+* priority: - level of concern (1 - really bad, 2 - badish, 3 - informational)
+* metadata: - allows a rule writer to embed additional information about the rule
+```
+## Snort IDS/IPS Payload detection options:
+```
+* content:"text" - looks for a string of text.
+* content:"|binary data|" - to look for a string of binary HEX
+* nocase - modified content, makes it case insensitive
+* depth: - specify how many bytes into a packet Snort should search for the
+           specified pattern
+* offset: - skips a certain number of bytes before searching (i.e. offset: 12)
+* distance: - how far into a packet Snort should ignore before starting to
+              search for the specified pattern relative to the end of the
+              previous pattern match
+* within: - modifier that makes sure that at most N bytes are between pattern
+            matches using the content keyword
+```
+
+## Snort rule example
+```
+    Look for anonymous ftp traffic:
+
+    alert tcp any any -> any 21 (msg:"Anonymous FTP Login"; content: "anonymous";
+    sid:2121; )
+
+    This will cause the pattern matcher to start looking at byte 6 in the payload)
+
+    alert tcp any any -> any 21 (msg:"Anonymous FTP Login"; content: "anonymous";
+    offset:5; sid:2121; )
+
+    This will search the first 14 bytes of the packet looking for the word “anonymous”.
+
+    alert tcp any any -> any 21 (msg:"Anonymous FTP Login"; content: "anonymous";
+    depth:14; sid:2121; )
+
+    Deactivates the case sensitivity of a text search.
+
+    alert tcp any any -> any 21 (msg:"Anonymous FTP Login"; content: "anonymous";
+    nocase; sid:2121; )
+```
+## Snort rule example
+```
+    ICMP ping sweep
+
+    alert icmp any any -> 10.10.0.40 any (msg: "NMAP ping sweep Scan";
+    dsize:0; itype:8; icode:0; sid:10000004; rev: 1; )
+
+    Look for a specific set of Hex bits (NoOP sled)
+
+    alert tcp any any -> any any (msg:"NoOp sled"; content: "|9090 9090 9090|";
+    sid:9090; rev: 1; )
+```
+## Snort rule example
+```
+    Telnet brute force login attempt
+
+    alert tcp any 23 -> any any (msg:"TELNET login incorrect";
+    content:"Login incorrect"; nocase; flow:established, from_server;
+    threshold: type both, track by_src, count 3, seconds 30;
+    classtype: bad-unknown; sid:2323; rev:6; )
+```
+## SNORT DEMO
+```
+ls -l /etc/snort/
+cat /etc/snort/snort.conf
+
+sudo snort -D -c /etc/snort/snort.conf -l /var/log/snort
+[sudo] password for student: 
+Spawning daemon child...
+My daemon child 16975 lives...             (correctly working)
+Daemon parent exiting (0)
+
+
+sudo tcpdump -r snort.log.1725980529
+```
+## To run snort as a Daemon
+```
+    sudo snort -D -c /etc/snort/snort.conf -l /var/log/snort
+```
+## To run snort against a PCAP
+```
+    sudo snort -c /etc/snort/rules/file.rules -r file.pcap
+```
