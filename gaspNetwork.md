@@ -2322,3 +2322,21 @@ nft add rule ip MANGLE OUTPUT oif eth0 ip ttl set 128
 
 nft add rule ip MANGLE OUTPUT oif eth0 ip dscp set 26
 ```
+## ARCHER:
+![image](https://github.com/user-attachments/assets/a1035db5-ebc8-4558-964e-24341619ad17)
+
+```
+ssh net2_student18@10.50.38.17 -p 22 -L 21801:10.1.2.200:23 -NT ( creates a Local tunnel going to Lana from Sterling )
+
+telnet localhost 21801 -----> ssh net2_student18@10.1.2.130 -p 22 -R 21899:localhost:8976 -NT ( Telnet to lana then set up a Remote tunnel going back to sterling) 
+
+ssh net2_student18@10.50.38.17 -p 22 -L 21802:localhost:21899 -NT ( creating a local tunnel to lana )
+
+ssh net2_student18@localhost -p 21802 -L 21803:10.2.5.20:22 -NT ( create a local tunnel going to Cheryl )
+
+ssh net2_student18@localhost -p 21803 -L 21804:10.3.9.39:23 -NT ( create a local tunnel going to Malory via telnet )
+
+telnet localhost 21804 -----> ssh net2_student18@10.3.9.33 -p 22 -R 21898:localhost:3597 -NT ( telnet to malory then set up a remote tunnel going back to cheryl via ssh )
+
+ssh net2_student18@localhost -p 21805 -D 9050 -NT  -----> proxychains nc localhost 58246 ( Dynamic tunnel )
+```
