@@ -2338,5 +2338,7 @@ ssh net2_student18@localhost -p 21803 -L 21804:10.3.9.39:23 -NT ( create a local
 
 telnet localhost 21804 -----> ssh net2_student18@10.3.9.33 -p 22 -R 21898:localhost:3597 -NT ( telnet to malory then set up a remote tunnel going back to cheryl via ssh )
 
-ssh net2_student18@localhost -p 21805 -D 9050 -NT  -----> proxychains nc localhost 58246 ( Dynamic tunnel )
+ssh net2_student18@localhost -p 21803 -L 21806:localhost:21898 -NT
+
+ssh net2_student18@localhost -p 21806 -D 9050 -NT  -----> proxychains nc localhost 58246 ( Dynamic tunnel )
 ```
