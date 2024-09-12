@@ -288,3 +288,94 @@ ssh net2_student18@10.2.2.6 -p 7777 -R 21899:localhost:2222 -NT   ----->> ssh ne
 
 ssh net2_comrade18@localhost -p 21802 -L 21803:10.10.10.140:301 -NT
 ```
+## BPF
+
+## BPFs Data Link Layer
+```
+###     Search for unicast (0x00) or multicast (0x01) MAC address.
+
+'ether[0] & 0x01 = 0x00'
+'ether[0] & 0x01 = 0x01'
+'ether[6] & 0x01 = 0x00'
+'ether[6] & 0x01 = 0x01'
+
+###        Search for IPv4, ARP, VLAN Tag, and IPv6 respectively.
+
+ether[12:2] = 0x0800
+ether[12:2] = 0x0806
+ether[12:2] = 0x8100
+ether[12:2] = 0x86dd
+```
+## BPFs Network Layer
+```
+###     Search for IHL greater than 5.
+
+'ip[0] & 0x0f > 0x05'
+'ip[0] & 15 > 5'
+
+###     Search for ipv4 DSCP value of 16.
+
+'ip[1] & 0xfc = 0x40'
+'ip[1] & 252 = 64'
+'ip[1] >> 2 = 16'
+```
+## BPFs Network / Flags MF
+```
+###      Search for ONLY the RES flag set. DF and MF must be off.
+
+'ip[6] & 0xE0 = 0x80'
+'ip[6] & 224 = 128'
+
+###     Search for RES bit set. The other 2 flags are ignored so they can be on or off.
+
+'ip[6] & 0x80 = 0x80'
+'ip[6] & 128 = 128'
+
+###     Search for ONLY the DF flag set. RES and MF must be off.
+
+'ip[6] & 0xE0 = 0x40'
+'ip[6] & 224 = 64'
+
+###     Search for DF bit set. The other 2 flags are ignored so they can be on or off.
+
+'ip[6] & 0x40 = 0x40'
+'ip[6] & 64 = 64'
+
+###     Search for ONLY the MF flag set. RES and DF must be off.
+
+'ip[6] & 0xe0 = 0x20'
+'ip[6] & 224 = 32'
+
+###     Search for MF bit set. The other 2 flags are ignored so they can be on or off.
+
+'ip[6] & 0x20 = 0x20'
+'ip[6] & 32 = 32'
+```
+## BPFs Network ICMP/TCP/UDP
+```
+### Search for ICMPv4(6), TCP, or UDP encapsulated within an ipv4(6) packet.
+
+'ip[9] = 0x01'
+'ip[9] = 0x06'
+'ip[9] = 0x11'
+'ip6[6] = 0x3A'
+'ip6[6] = 0x06'
+'ip6[6] = 0x11'
+```
+## BPFs Network IP Addresses
+```
+### Search for ipv4 source or destination address of 10.1.1.1.
+
+'ip[12:4] = 0x0a010101'
+'ip[16:4] = 0x0a010101'
+```
+## BPFs Transport Layer
+```
+###     Search for TCP Flags set to ACK+SYN. No other flags can be set.
+
+'tcp[13] = 0x12'
+```
+## BPF VLAN Hopping between vlans
+```
+ether[12:4] & 0xffff0fff = 0x81000001 && ether[16:4] & 0xffff0fff = 0x8100000a
+```
