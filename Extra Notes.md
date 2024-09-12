@@ -1,3 +1,5 @@
+## https://github.com/S-DeHerrera-Neil
+
 ## https://miro.com/app/board/o9J_klSqCSY=/
 
 ## PING SWEEP for devices that dont have ruby /// for i in [1..254] ;do (ping -c 1 192.168.1.$i 2>/dev/null | grep "bytes from" &) ;done
