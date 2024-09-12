@@ -199,3 +199,90 @@ ssh net2_student18@localhost -p 21803 -L 21806:localhost:21898 -NT
 
 ssh net2_student18@localhost -p 21806 -D 9050 -NT  -----> proxychains nc localhost 58246 ( Dynamic tunnel )
 ```
+## FAAAA Tunnel
+```
+telnet 10.50.42.86 -------> ssh student@10.50.42.163 -R 21899:localhost:22 (telnet to floating IP then created a Remote tunnel back to BIH / enumm devices)
+
+BIH>: ssh net2_student18@localhost -p 21899 -L 21802:192.168.0.40:5555 -NT (Tunnel going to the .40 device)
+
+192.168.0.40>: ssh net2_student18@localhost -p 21802 -L 21804:172.16.0.60:23 -NT (Tunnel going from the .40 to the .60 TELNET PORT network via telnet port)
+
+BIH>: telnet localhost 21804 -------->
+
+172.16.0.60>: ssh net2_student18@192.168.0.40 -p 5555 -R 21895:localhost:22 -NT (created a Remote tunnel via SSH back to the .40 from the 172.16.0.60 device) 
+
+BIH>: ssh net2_student18@localhost -p 21802 -L 21810:localhost:21895 -NT ( created a local tunnel to the .40 on the same port I used to create  the first local tunnel to the .40)
+
+BIH>: ssh net2_comrade18@localhost -p 21810 (connecting the two Remote tunnels together)
+```
+
+## SCP within a tunnel
+```
+proxychains scp net2_student18@192.168.10.101:/usr/share/cctc/capstone-analysis_HEX-ENCODED.pcap .
+
+proxychains scp net2_student18@192.168.10.101:/usr/share/cctc/* .   (Copies everything from directory)
+```
+## Stream Sock  /// https://net.cybbh.io/public/networking/latest/12_programming/fg.html#_12_5_demonstration_of_creating_stream_and_dgram_sockets
+```
+stream_sock.py
+```
+## rules: find   ///  https://net.cybbh.io/public/networking/latest/11_acl/fg.html
+```
+cat alien-abductions.rules | grep -e "flags: 0"
+```
+## TCPDUMP  /////  https://net.cybbh.io/public/networking/latest/06_traffic_cap/fg.html#_6_2_1_explain_tcpdump_primitives
+```
+ Basic TCPDump options
+
+    -A Prints the frame payload in ASCII.
+
+tcpdump -A
+
+    -D Print the list of the network interfaces available on the system and on which TCPDump can capture packets. For each network interface, a number and an interface name, followed by a text description of the interface, is printed. This can be used to identify which interfaces are available for traffic capture.
+
+tcpdump -D
+
+    -i Normally, eth0 will be selected by default if you do not specify an interface. However, if a different interface is needed, it must be specified.
+
+tcpdump -i eth0
+
+    -e Prints Data-Link Headers. Default is to print the encapsulated protocol only.
+
+tcpdump -e
+
+    -X displays packet data in HEX and ASCII.
+    -XX displays the packet data in HEX and ASCII to include the Ethernet portion.
+
+tcpdump -i eth0 -X
+tcpdump -i eth0 -XX
+
+    -w writes the capture to an output file
+
+tcpdump -w something.pcap
+
+    -r reads from the pcap
+
+tcpdump -r something.pcap
+
+    -v gives more verbose output with details on the time to live, IPID, total length, options, and flags. Additionally, it enables integrity checking.
+
+tcpdump -vv
+
+    -n Does not covert protocol and addresses to names
+
+tcpdump -n
+```
+## tcpdump portrange 20-100 and host 10.1.0.2 or host 10.1.0.3 and dst net 10.2.0.0/24 -vn
+
+## tcpdump -i eth -XX -vv dst host 
+
+## CAP TUNNEL:
+```
+ssh net2_student18@10.50.31.50 -p 7777 -L 21801:10.2.2.7:23 -NT
+
+telnet localhost 21801
+
+ssh net2_student18@10.2.2.6 -p 7777 -R 21899:localhost:2222 -NT   ----->> ssh net2_student18@10.50.31.50 -p 7777 -L 21802:localhost:21899 -NT
+
+ssh net2_comrade18@localhost -p 21802 -L 21803:10.10.10.140:301 -NT
+```
