@@ -1,4 +1,6 @@
 ## https://github.com/S-DeHerrera-Neil
+## https://github.com/S-DeHerrera-Neil/Collaboration_Networking-Collab.md/blob/main/Packet_Headers.md
+## https://github.com/S-DeHerrera-Neil/Collaboration_Networking-Collab.md/blob/main/Study_Session_Notes.md
 
 ## https://miro.com/app/board/o9J_klSqCSY=/
 
