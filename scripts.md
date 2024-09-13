@@ -302,10 +302,10 @@ packet = ip_header + tcp_hdr + hidden_msg
 
 # s.connect((dst_ip, port)) # typically used for TCP
 # s.send(packet)
-```
 
 # Send the packet. Sendto is used when we do not already have a socket connection. Sendall or send if we do.
 s.sendto(packet, (dst_ip, 0))
 
 # socket.send is a low-level method and basically just the C/syscall method send(3) / send(2). It can send fewer bytes than you requested, but returns the number of bytes sent.
 #socket.sendall ﻿is a high-level Python-only method that sends the entire buffer you pass or throws an exception. It does that by calling socket.send ﻿ until everything has been sent or an error occurs.
+```
